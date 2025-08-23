@@ -1,0 +1,9 @@
+@import "tailwindcss";
+/* Tailwind or regular CSS */
+.PhoneInput {
+  @apply w-full text-base;
+}
+
+.PhoneInputInput {
+  @apply p-2 border rounded w-full text-base;
+}
