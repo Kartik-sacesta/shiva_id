@@ -7,32 +7,37 @@ export const authApi = createApi({
   baseQuery: customAxiosBaseQuery,
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
-    login: builder.mutation({
-      query(loginData) {
-        return {
-          url: "api/users/login",
-          method: "POST",
-          body: loginData,
-        };
-      },
-      async onQueryStarted(args, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
+   login: builder.mutation({
+  query(loginData) {
+    return {
+      url: "api/users/login",
+      method: "POST",
+      body: loginData,
+    };
+  },
+  async onQueryStarted(args, { dispatch, queryFulfilled }) {
+    try {
+      const { data } = await queryFulfilled;
 
-          const accessToken = data.access_token;
-          if (accessToken) {
-            localStorage.setItem("accessToken", accessToken);
-            // dispatch(setToken(accessToken));
-            dispatch(setLoggedIn(true));
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      },
-      transformResponse: (result) => {
-        return result?.data;
-      },
-    }),
+      const accessToken = data.access_token;
+      const user = data.user; // 👈 Extract user from response data
+      
+      if (accessToken) {
+        localStorage.setItem("accessToken", accessToken);
+        dispatch(setLoggedIn(true));
+      }
+      
+      if (user) {
+        dispatch(setUser(user)); // 👈 Store user with role immediately
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  transformResponse: (result) => {
+    return result?.data;
+  },
+}),
     getCurrentUser: builder.query({
       query() {
         return {

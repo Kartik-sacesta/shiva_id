@@ -5,12 +5,19 @@ import { CircularProgress, Box } from "@mui/material";
 
 // Components
 import AuthGuard from "../pages/AuthGuard/AuthGuard";
+import RoleGuard from "../pages/AuthGuard/RoleGuard";
 import Layout from "../layout/Layout";
 import LoginModal from "../pages/login/LoginModal";
 import CreateCard from "../pages/CreateCard/CreateCard";
 import MyCards from "../pages/MyCards/MyCards";
+import Dashboard from "../pages/Dashboard/Dashboard";
 
 const WithAuthGuard = ({ children }) => <AuthGuard>{children}</AuthGuard>;
+const WithAdminGuard = ({ children }) => (
+  <AuthGuard>
+    <RoleGuard requiredRole="admin">{children}</RoleGuard>
+  </AuthGuard>
+);
 
 // Loading component for Suspense
 const LoadingFallback = () => (
@@ -37,14 +44,14 @@ const Router = () => {
       {/* Public Routes */}
       <Route path="auth-login" element={<LoginModal />} />
 
-      {/* Protected Routes - Redirect to Create Card */}
+      {/* Dashboard Route - Redirects based on role */}
       <Route
         path="/"
         element={
           <WithAuthGuard>
-            <Layout title="Create Card">
+            <Layout title="Dashboard">
               <Suspense fallback={<LoadingFallback />}>
-                <CreateCard />
+                <Dashboard />
               </Suspense>
             </Layout>
           </WithAuthGuard>
@@ -53,15 +60,17 @@ const Router = () => {
       <Route
         path="/create-card"
         element={
-          <WithAuthGuard>
+          <WithAdminGuard>
             <Layout title="Create Card">
               <Suspense fallback={<LoadingFallback />}>
                 <CreateCard />
               </Suspense>
             </Layout>
-          </WithAuthGuard>
+          </WithAdminGuard>
         }
       />
+      
+      {/* Protected Routes - All Authenticated Users */}
       <Route
         path="/my-cards"
         element={
@@ -74,16 +83,18 @@ const Router = () => {
           </WithAuthGuard>
         }
       />
+      
+      {/* Admin Only - Edit Card */}
       <Route
         path="/edit-card/:id"
         element={
-          <WithAuthGuard>
+          <WithAdminGuard>
             <Layout title="Edit Card">
               <Suspense fallback={<LoadingFallback />}>
                 <CreateCard />
               </Suspense>
             </Layout>
-          </WithAuthGuard>
+          </WithAdminGuard>
         }
       />
     </Routes>

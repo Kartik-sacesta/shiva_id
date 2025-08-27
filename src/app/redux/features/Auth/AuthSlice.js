@@ -19,13 +19,22 @@ const authSlice = createSlice({
       state.user = action.payload;
       state.loading = false;
     },
+    clearAuth: (state) => {
+      state.loggedIn = false;
+      state.user = null;
+      state.loading = false;
+    },
   },
 });
 
-export const { setLoggedIn, setUser } = authSlice.actions;
+export const { setLoggedIn, setUser, clearAuth } = authSlice.actions;
 
-// export const getToken = (state) => state.authState.token;
+// Selectors
 export const getLoggedIn = (state) => state.authState.loggedIn;
 export const getUser = (state) => state.authState?.user;
 export const isUserLoading = (state) => state.authState?.loading;
+export const getUserRole = (state) => state.authState?.user?.role || 'user';
+export const isAdmin = (state) => state.authState?.user?.role === 'admin';
+export const isUser = (state) => state.authState?.user?.role === 'user';
+
 export default authSlice.reducer;

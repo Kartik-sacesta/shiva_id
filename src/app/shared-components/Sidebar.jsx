@@ -25,21 +25,26 @@ import {
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { setLoggedIn, setUser } from "../redux/features/Auth/AuthSlice";
-import { getUser } from "../redux/features/Auth/AuthSlice";
+import { clearAuth } from "../redux/features/Auth/AuthSlice";
+import { getUser, isAdmin } from "../redux/features/Auth/AuthSlice";
 
 const DRAWER_WIDTH = 280;
 
-const menuItems = [
-  {
-    text: "Create Card",
-    icon: <AddIcon />,
-    path: "/",
-  },
+// Base menu items available to all users
+const baseMenuItems = [
   {
     text: "My Cards",
     icon: <CreditCardIcon />,
     path: "/my-cards",
+  },
+];
+
+// Admin-only menu items
+const adminMenuItems = [
+  {
+    text: "Create Card",
+    icon: <AddIcon />,
+    path: "/",
   },
 ];
 
@@ -50,6 +55,20 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector(getUser);
+  const userIsAdmin = useSelector(isAdmin);
+
+
+console.log("user is admin---->", userIsAdmin); // 👈 Fixed console.log
+  // Get menu items based on user role
+  const getMenuItems = () => {
+    let menuItems = [...baseMenuItems];
+    if (userIsAdmin) {
+      menuItems = [...adminMenuItems, ...baseMenuItems];
+    }
+    return menuItems;
+  };
+
+  const menuItems = getMenuItems();
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -60,10 +79,7 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-
-    dispatch(setLoggedIn(false)); // reset Redux state
-    dispatch(setUser(null)); // clear user details if you store them
-    // navigate("/auth-login");
+    dispatch(clearAuth()); // Clear all auth state
     window.location.href = "/auth-login";
   };
 
@@ -101,59 +117,8 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
         )}
       </Box>
 
-      {/* User Profile Section */}
-      {user && (
-        <Box
-          sx={{
-            p: { xs: 1.5, sm: 2 },
-            backgroundColor: "#f5f5f5",
-            borderBottom: "1px solid #e0e0e0",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: { xs: 1.5, sm: 2 },
-            }}
-          >
-            <Avatar
-              sx={{
-                bgcolor: "#1976d2",
-                width: { xs: 36, sm: 40 },
-                height: { xs: 36, sm: 40 },
-              }}
-            >
-              <PersonIcon />
-            </Avatar>
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography
-                variant="subtitle2"
-                fontWeight={600}
-                sx={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {user.name || "User"}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                sx={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  display: "block",
-                }}
-              >
-                {user.email || "user@example.com"}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      )}
+     
+      
 
       {/* Navigation Menu */}
       <List sx={{ flexGrow: 1, pt: 1, px: { xs: 0.5, sm: 1 } }}>
