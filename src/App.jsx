@@ -12,7 +12,7 @@ import {
 } from "./app/redux/features/Auth/AuthSlice";
 import { CircularProgress, Box } from "@mui/material";
 import { StepNavigationProvider } from "./app/contexts/StepNavigationContext.jsx";
-import "react-quill/dist/quill.snow.css";
+
 
 function App() {
   const { 
