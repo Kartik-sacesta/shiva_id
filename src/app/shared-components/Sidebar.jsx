@@ -12,6 +12,7 @@ import {
   useTheme,
   useMediaQuery,
   Avatar,
+  Collapse,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -22,11 +23,14 @@ import {
   ContactMail as ContactMailIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  ExpandLess,
+  ExpandMore,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { clearAuth } from "../redux/features/Auth/AuthSlice";
-import { getUser, isAdmin } from "../redux/features/Auth/AuthSlice";
+import { isAdmin } from "../redux/features/Auth/AuthSlice";
+import { useStepNavigation } from "../hooks/useStepNavigation";
 
 const DRAWER_WIDTH = 280;
 
@@ -54,9 +58,11 @@ const Sidebar = ({ mobileOpen, handleDrawerToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const user = useSelector(getUser);
   const userIsAdmin = useSelector(isAdmin);
+  const { activeStep, setActiveStep, steps, isOnCreateCardPage, cardId } = useStepNavigation();
 
+  // Check if we're on CreateCard page
+  const isCreateCardPage = location.pathname === "/" || location.pathname.includes("/edit-card/");
 
 console.log("user is admin---->", userIsAdmin); // 👈 Fixed console.log
   // Get menu items based on user role
@@ -72,6 +78,18 @@ console.log("user is admin---->", userIsAdmin); // 👈 Fixed console.log
 
   const handleNavigation = (path) => {
     navigate(path);
+    if (isMobile) {
+      handleDrawerToggle();
+    }
+  };
+
+  const handleStepNavigation = (stepIndex) => {
+    setActiveStep(stepIndex);
+    if (cardId) {
+      navigate(`/edit-card/${cardId}?step=${stepIndex}`);
+    } else {
+      navigate(`/?step=${stepIndex}`);
+    }
     if (isMobile) {
       handleDrawerToggle();
     }
@@ -156,6 +174,64 @@ console.log("user is admin---->", userIsAdmin); // 👈 Fixed console.log
             </ListItemButton>
           </ListItem>
         ))}
+
+        {/* Step Navigation - Only show in mobile view and on CreateCard page */}
+        {isMobile && isCreateCardPage && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <ListItem>
+              <Typography variant="subtitle2" color="textSecondary" sx={{ fontWeight: 600 }}>
+                Form Steps
+              </Typography>
+            </ListItem>
+            {steps.map((step, index) => (
+              <ListItem key={step.key} disablePadding>
+                <ListItemButton
+                  onClick={() => handleStepNavigation(index)}
+                  selected={activeStep === index}
+                  sx={{
+                    mx: { xs: 0.5, sm: 1 },
+                    borderRadius: 1,
+                    py: { xs: 1, sm: 1.5 },
+                    pl: 3,
+                    "&.Mui-selected": {
+                      backgroundColor: "#e3f2fd",
+                      color: "#1976d2",
+                    },
+                    "&:hover": {
+                      backgroundColor: "#f5f5f5",
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      backgroundColor: activeStep === index ? "#1976d2" : "#e0e0e0",
+                      color: activeStep === index ? "white" : "#666",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      mr: 2,
+                      fontSize: 12,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {index + 1}
+                  </Box>
+                  <ListItemText
+                    primary={step.title}
+                    primaryTypographyProps={{
+                      variant: "body2",
+                      fontWeight: activeStep === index ? 600 : 400,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </>
+        )}
       </List>
 
       <Divider />

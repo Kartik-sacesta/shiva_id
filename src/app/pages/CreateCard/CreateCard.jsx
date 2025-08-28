@@ -6,14 +6,11 @@ import {
   Button,
   useTheme,
   useMediaQuery,
-  Drawer,
-  IconButton,
   Stepper,
   Step,
   StepLabel,
   CircularProgress,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 
 import useFileFunction from "../../services/api/useFileFunction";
 import {
@@ -24,6 +21,7 @@ import {
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getDigitalCard } from "../../redux/features/DigitalCards/DigitalCardsSlice";
+import { useStepNavigation } from "../../hooks/useStepNavigation";
 
 // Preload critical forms, lazy load others
 import CompanyForm from "./Forms/CompanyForm";
@@ -54,10 +52,30 @@ const CreateCard = React.memo(() => {
   const routeParams = useParams();
   const cid = routeParams?.id;
 
+  // Use step navigation context
+  const { 
+    activeStep, 
+    setActiveStep, 
+    setIsOnCreateCardPage, 
+    setCardId 
+  } = useStepNavigation();
+
   // step from query param
   const [searchParams, setSearchParams] = useSearchParams();
   const initialStepFromURL = parseInt(searchParams.get("step") || "0", 10);
-  const [activeStep, setActiveStep] = useState(initialStepFromURL);
+
+  // Initialize context when component mounts
+  useEffect(() => {
+    setIsOnCreateCardPage(true);
+    setCardId(cid);
+    setActiveStep(initialStepFromURL);
+
+    // Cleanup when component unmounts
+    return () => {
+      setIsOnCreateCardPage(false);
+      setCardId(null);
+    };
+  }, [cid, initialStepFromURL, setIsOnCreateCardPage, setCardId, setActiveStep]);
 
   // Keep URL in sync when activeStep changes
   useEffect(() => {
@@ -254,88 +272,15 @@ const CreateCard = React.memo(() => {
         {isMobile ? (
           <>
             <Typography variant="subtitle2" color="textSecondary" mb={2}>
-              Step {activeStep + 1} of {steps.length}
+              Step {activeStep + 1} of {steps.length}: {steps[activeStep]?.title}
+            </Typography>
+            
+            <Typography variant="body2" color="textSecondary" mb={3}>
+              Use the sidebar menu to navigate between steps
             </Typography>
 
-            {steps.map((step, index) => {
-              const isActive = index === activeStep;
-              return (
-                <Paper
-                  key={step.key}
-                  variant="outlined"
-                  onClick={() => {
-                    if (cid) setActiveStep(index);
-                  }}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    p: 2,
-                    mb: 2,
-                    borderColor: isActive ? "primary.main" : "grey.300",
-                    backgroundColor: isActive ? "primary.50" : "white",
-                    cursor: cid ? "pointer" : "default",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: "50%",
-                      backgroundColor: isActive ? "primary.main" : "grey.300",
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mr: 2,
-                      fontSize: 14,
-                    }}
-                  >
-                    {index + 1}
-                  </Box>
-
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography fontWeight={600} fontSize={15}>
-                      {step.title}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color={isActive ? "primary.main" : "text.secondary"}
-                    >
-                      {isActive ? "Current step" : "Pending"}
-                    </Typography>
-                  </Box>
-                </Paper>
-              );
-            })}
-
-            <Drawer
-              anchor="right"
-              open={activeStep !== null}
-              onClose={() => setActiveStep(null)}
-              PaperProps={{
-                sx: { width: "100%", maxWidth: "100vw" },
-              }}
-            >
-              <Box sx={{ p: 2 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    mb: 2,
-                  }}
-                >
-                  <Typography variant="h6">
-                    {steps[activeStep].title}
-                  </Typography>
-                  <IconButton onClick={() => setActiveStep(null)}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-
-                <Box>{renderStepContent(activeStep)}</Box>
-              </Box>
-            </Drawer>
+            {/* Show current step content directly in mobile */}
+            <Box>{renderStepContent(activeStep)}</Box>
           </>
         ) : (
           <>

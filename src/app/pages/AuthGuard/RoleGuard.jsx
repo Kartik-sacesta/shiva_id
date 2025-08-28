@@ -1,14 +1,40 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Box, Typography, Paper, Button } from "@mui/material";
-import { Lock as LockIcon, ArrowBack as ArrowBackIcon } from "@mui/icons-material";
+import { Box, Typography, Paper, Button, CircularProgress } from "@mui/material";
+import { 
+  Lock as LockIcon, 
+  ArrowBack as ArrowBackIcon
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { getUserRole, isAdmin } from "../../redux/features/Auth/AuthSlice";
+import { 
+  getUserRole, 
+  isAdmin, 
+  getUser, 
+  isUserLoading
+} from "../../redux/features/Auth/AuthSlice";
 
 const RoleGuard = ({ children, requiredRole = "admin", fallback = null }) => {
   const userRole = useSelector(getUserRole);
   const isUserAdmin = useSelector(isAdmin);
+  const user = useSelector(getUser);
+  const loading = useSelector(isUserLoading);
   const navigate = useNavigate();
+
+  // Show loading spinner while user data is being fetched
+  if (loading || !user) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   // Check if user has required role
   const hasRequiredRole = () => {
@@ -17,6 +43,16 @@ const RoleGuard = ({ children, requiredRole = "admin", fallback = null }) => {
     }
     return userRole === requiredRole;
   };
+
+  // Debug logging (remove in production)
+  console.log("RoleGuard Debug:", {
+    user,
+    userRole,
+    isUserAdmin,
+    requiredRole,
+    hasRequiredRole: hasRequiredRole(),
+    loading
+  });
 
   // If user doesn't have required role, show fallback or access denied
   if (!hasRequiredRole()) {
@@ -67,13 +103,13 @@ const RoleGuard = ({ children, requiredRole = "admin", fallback = null }) => {
           <Typography variant="h5" fontWeight={600} gutterBottom>
             Access Denied
           </Typography>
-          
+
           <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
             You don't have permission to access this feature. This area is restricted to {requiredRole} users only.
           </Typography>
 
           <Typography variant="body2" color="textSecondary" sx={{ mb: 4 }}>
-            Current role: <strong>{userRole}</strong>
+            Current role: <strong>{userRole || 'Not assigned'}</strong>
           </Typography>
 
           <Button
