@@ -29,7 +29,6 @@
     "react-phone-number-input": "^3.4.12",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.1",
-    "react-rte": "^0.16.5",
     "yup": "^1.7.0"
   },
   "devDependencies": {
