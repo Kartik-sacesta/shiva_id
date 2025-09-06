@@ -35,35 +35,45 @@ function App() {
     skip: !shouldFetchUser
   });
 
-  useEffect(() => {
-    // Handle token validation results
-    if (tokenError && !tokenLoading) {
-      console.log("Token validation failed, clearing auth");
-      dispatch(clearAuth());
-      navigate("/auth-login");
-      return;
-    }
+ // In App.js - Replace the useEffect blocks with these:
+useEffect(() => {
+  // Only run token validation if there's a token in localStorage
+  const token = localStorage.getItem("accessToken");
+  
+  if (!token && !tokenLoading) {
+    // No token found, mark auth as checked and don't validate
+    dispatch(setAuthChecked(true));
+    return;
+  }
 
-    if (tokenIsValid && !tokenLoading) {
-      console.log("Token is valid, setting logged in");
-      dispatch(setLoggedIn(true));
-    }
-  }, [tokenIsValid, tokenLoading, tokenError, dispatch, navigate]);
+  // Handle token validation results only if we attempted validation
+  if (tokenError && !tokenLoading) {
+    console.log("Token validation failed, clearing auth");
+    dispatch(clearAuth());
+    return;
+  }
 
-  useEffect(() => {
-    // Handle user data fetching results
-    if (userError && shouldFetchUser) {
-      console.log("Failed to fetch user data, clearing auth");
-      dispatch(clearAuth());
-      navigate("/auth-login");
-      return;
-    }
+  if (tokenIsValid && !tokenLoading) {
+    console.log("Token is valid, setting logged in");
+    dispatch(setLoggedIn(true));
+  }
+}, [tokenIsValid, tokenLoading, tokenError, dispatch]);
 
-    // Mark auth as checked when we have both token validation and user data (or failed to get them)
-    if (!tokenLoading && (!shouldFetchUser || !userLoading)) {
-      dispatch(setAuthChecked(true));
-    }
-  }, [userError, userLoading, shouldFetchUser, tokenLoading, dispatch, navigate]);
+useEffect(() => {
+  // Handle user data fetching results
+  if (userError && shouldFetchUser) {
+    console.log("Failed to fetch user data, clearing auth");
+    dispatch(clearAuth());
+    return;
+  }
+
+  // Mark auth as checked when we have completed all necessary checks
+  if (!tokenLoading && (!shouldFetchUser || !userLoading)) {
+    dispatch(setAuthChecked(true));
+  }
+}, [userError, userLoading, shouldFetchUser, tokenLoading, dispatch]);
+
+
 
   // Show loading screen while checking authentication
   if (tokenLoading || (shouldFetchUser && userLoading) || !authReady) {

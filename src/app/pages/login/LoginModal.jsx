@@ -40,24 +40,28 @@ const LoginModal = () => {
     formState: { errors },
   } = useForm({ mode: "onTouched" });
 
-  useEffect(() => {
-    if (isLoggedIn || (tokenSuccess && !tokenLoading)) {
+ // In LoginModal.js - Replace the useEffect blocks with these:
+useEffect(() => {
+  // Only redirect if fully logged in and not in loading state
+  if (isLoggedIn && !tokenLoading && !isLoading) {
+    navigate("/");
+  }
+}, [isLoggedIn, tokenLoading, isLoading, navigate]);
+
+useEffect(() => {
+  if (isSuccess && !isLoading) {
+    // Small delay to ensure token is properly stored
+    setTimeout(() => {
       navigate("/");
-    }
-  }, [isLoggedIn, tokenSuccess, tokenLoading, navigate]);
+    }, 100);
+  }
 
-  useEffect(() => {
-    if (isSuccess && !isLoading) {
-      navigate("/");
-    }
-
-    if (isError && !isLoading) {
-      console.error(error);
-      if (error?.status === "FETCH_ERROR") setError("Server Down");
-      else setError(error?.data?.message || "Login failed");
-    }
-  }, [isSuccess, isLoading, isError, error, navigate]);
-
+  if (isError && !isLoading) {
+    console.error(error);
+    if (error?.status === "FETCH_ERROR") setError("Server Down");
+    else setError(error?.data?.message || "Login failed");
+  }
+}, [isSuccess, isLoading, isError, error, navigate]);
   const onFormSubmit = async (formData) => {
     const payload = {
       email: formData.email,

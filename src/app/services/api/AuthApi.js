@@ -13,42 +13,41 @@ export const authApi = createApi({
   baseQuery: customAxiosBaseQuery,
   tagTypes: ["Auth"],
   endpoints: (builder) => ({
-    login: builder.mutation({
-      query(loginData) {
-        return {
-          url: "api/users/login",
-          method: "POST",
-          body: loginData,
-        };
-      },
-      async onQueryStarted(args, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
+ // In AuthApi.js - Replace the login mutation with this:
+login: builder.mutation({
+  query(loginData) {
+    return {
+      url: "api/users/login",
+      method: "POST",
+      body: loginData,
+    };
+  },
+  async onQueryStarted(args, { dispatch, queryFulfilled }) {
+    try {
+      const { data } = await queryFulfilled;
 
-          const accessToken = data.access_token;
-          const user = data.user;
-          
-          if (accessToken) {
-            localStorage.setItem("accessToken", accessToken);
-          }
-          
-          // Use setAuthComplete to set both login status and user data
-          if (accessToken && user) {
-            dispatch(setAuthComplete({ loggedIn: true, user }));
-          } else if (accessToken) {
-            dispatch(setLoggedIn(true));
-            // If no user data in login response, fetch it separately
-            dispatch(authApi.endpoints.getCurrentUser.initiate());
-          }
-        } catch (error) {
-          console.error("Login error:", error);
-          dispatch(setAuthError(error.message || "Login failed"));
+      const accessToken = data.access_token;
+      const user = data.user;
+      
+      if (accessToken) {
+        localStorage.setItem("accessToken", accessToken);
+        
+        // Immediately set auth complete to prevent clearing
+        if (user) {
+          dispatch(setAuthComplete({ loggedIn: true, user }));
+        } else {
+          dispatch(setLoggedIn(true));
         }
-      },
-      transformResponse: (result) => {
-        return result?.data;
-      },
-    }),
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      dispatch(setAuthError(error.message || "Login failed"));
+    }
+  },
+  transformResponse: (result) => {
+    return result?.data;
+  },
+}),
 
     getCurrentUser: builder.query({
       query() {

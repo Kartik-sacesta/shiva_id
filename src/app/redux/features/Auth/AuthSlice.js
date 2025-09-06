@@ -36,15 +36,19 @@ const authSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
-    clearAuth: (state) => {
-      state.loggedIn = false;
-      state.user = null;
-      state.loading = false;
-      state.authChecked = true;
-      state.error = null;
-      // Clear token from localStorage
-      localStorage.removeItem("accessToken");
-    },
+   // In AuthSlice.js - Replace the clearAuth reducer with this:
+clearAuth: (state) => {
+  state.loggedIn = false;
+  state.user = null;
+  state.loading = false;
+  state.authChecked = true;
+  state.error = null;
+  
+  // Only clear token if we're actually clearing auth
+  if (typeof window !== 'undefined' && localStorage.getItem("accessToken")) {
+    localStorage.removeItem("accessToken");
+  }
+},
     // Complete authentication setup (both login status and user data)
     setAuthComplete: (state, action) => {
       const { loggedIn, user } = action.payload;
