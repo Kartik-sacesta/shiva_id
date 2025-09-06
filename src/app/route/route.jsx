@@ -42,7 +42,7 @@ const Router = () => {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="auth-login" element={<LoginModal />} />
+      <Route path="/auth-login" element={<LoginModal />} />
 
       {/* Dashboard Route - Redirects based on role */}
       <Route
@@ -84,17 +84,17 @@ const Router = () => {
         }
       />
       
-      {/* Admin Only - Edit Card */}
+      {/* All Authenticated Users - Edit Card */}
       <Route
         path="/edit-card/:id"
         element={
-          <WithAdminGuard>
+          <WithAuthGuard>
             <Layout title="Edit Card">
               <Suspense fallback={<LoadingFallback />}>
                 <CreateCard />
               </Suspense>
             </Layout>
-          </WithAdminGuard>
+          </WithAuthGuard>
         }
       />
     </Routes>

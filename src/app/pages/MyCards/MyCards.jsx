@@ -19,15 +19,18 @@ import {
 } from "@mui/icons-material";
 import LinkIcon from "@mui/icons-material/Link";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import axiosInstance from "../../services/utils/axiosIntance";
 import FormService from "../../services/FormService";
 import { useDeleteDigitalCardMutation } from "../../services/api/CustomerApi";
+import { isAdmin } from "../../redux/features/Auth/AuthSlice";
 
 const MyCards = React.memo(() => {
   const navigate = useNavigate();
+  const isUserAdmin = useSelector(isAdmin);
   const [cards, setCards] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [selectedCard, setSelectedCard] = useState(null);
@@ -158,7 +161,6 @@ const MyCards = React.memo(() => {
             size="medium"
             onClick={() => {
               setSelectedCard(params.row);
-
               getCustomer(params.row);
             }}
           >
@@ -173,15 +175,17 @@ const MyCards = React.memo(() => {
           >
             <EditIcon fontSize="inherit" />
           </IconButton>
-          <IconButton
-            size="medium"
-            onClick={() => {
-              setSelectedCard(params.row);
-              setDeleteDialog(true);
-            }}
-          >
-            <DeleteIcon fontSize="inherit" />
-          </IconButton>
+          {isUserAdmin && (
+            <IconButton
+              size="medium"
+              onClick={() => {
+                setSelectedCard(params.row);
+                setDeleteDialog(true);
+              }}
+            >
+              <DeleteIcon fontSize="inherit" />
+            </IconButton>
+          )}
         </Box>
       ),
     },
@@ -256,14 +260,16 @@ const MyCards = React.memo(() => {
             Manage your digital business cards
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreateNew}
-          sx={{ minWidth: 150 }}
-        >
-          Create New Card
-        </Button>
+        {isUserAdmin && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreateNew}
+            sx={{ minWidth: 150 }}
+          >
+            Create New Card
+          </Button>
+        )}
       </Box>
 
       {/* Search Bar */}
