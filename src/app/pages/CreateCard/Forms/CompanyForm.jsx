@@ -13,6 +13,18 @@ import { useSelector } from "react-redux";
 import { getDigitalCard } from "../../../redux/features/DigitalCards/DigitalCardsSlice";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { parsePhoneNumber } from "libphonenumber-js";
+
+// Helper function
+const validatePhoneNumber = (value) => {
+  if (!value) return false;
+  try {
+    const phoneNumber = parsePhoneNumber(value);
+    return phoneNumber && phoneNumber.isValid() && phoneNumber.nationalNumber.length === 10;
+  } catch (e) {
+    return false;
+  }
+};
 
 // FuseLoading component replacement
 const FuseLoading = ({ className }) => (
@@ -43,14 +55,52 @@ const schema = yup.object().shape({
   name: yup.string().required("Contact Name is required"),
   designation: yup.string().required("Designation is required"),
   country: yup.string().required("Country Name is required"),
-  contactNumber1: yup.string().required("Contact Number 1 is required"),
-  whatsappNumber1: yup.string().required("WhatsApp Number 1 is required"),
-  contactNumber2: yup.string().notRequired(),
-  whatsappNumber2: yup.string().notRequired(),
-  landlineNumber: yup.string().notRequired(),
+
+  contactNumber1: yup
+    .string()
+    .required("Contact Number 1 is required")
+    .test(
+      "valid-phone",
+      "Contact Number 1 must be a valid phone number with exactly 10 digits after country code",
+      validatePhoneNumber
+    ),
+
+  whatsappNumber1: yup
+    .string()
+    .required("WhatsApp Number 1 is required")
+    .test(
+      "valid-phone",
+      "WhatsApp Number 1 must be a valid phone number with exactly 10 digits after country code",
+      validatePhoneNumber
+    ),
+
+  contactNumber2: yup
+    .string()
+    .notRequired()
+    .test(
+      "valid-phone",
+      "Contact Number 2 must be a valid phone number with exactly 10 digits after country code",
+      (value) => (value ? validatePhoneNumber(value) : true)
+    ),
+
+  whatsappNumber2: yup
+    .string()
+    .notRequired()
+    .test(
+      "valid-phone",
+      "WhatsApp Number 2 must be a valid phone number with exactly 10 digits after country code",
+      (value) => (value ? validatePhoneNumber(value) : true)
+    ),
+
+  landlineNumber: yup
+    .string()
+    .notRequired()
+    ,
+
   email: yup.string().email().required("Email is required"),
   address: yup.string().required("Address is required"),
   websiteUrl: yup.string().notRequired(),
+
   googleMapLink: yup
     .string()
     .required("Google Map Link is required")
@@ -59,9 +109,7 @@ const schema = yup.object().shape({
       "Please enter a valid Google Maps link",
       function (value) {
         if (!value) return false;
-
-        // Check for various Google Maps URL patterns
-        const googleMapsPatterns = [
+        const patterns = [
           /^https:\/\/maps\.google\.com/,
           /^https:\/\/www\.google\.com\/maps/,
           /^https:\/\/goo\.gl\/maps/,
@@ -69,18 +117,22 @@ const schema = yup.object().shape({
           /^https:\/\/www\.google\.co\..*\/maps/,
           /^https:\/\/maps\.google\./,
         ];
-
-        return googleMapsPatterns.some((pattern) => pattern.test(value));
+        return patterns.some((pattern) => pattern.test(value));
       }
     ),
+
   logoImage: yup
     .string()
     .required("Logo Image is required")
-    .test("is-logo-uploaded", "Please upload a logo image", function (value) {
-      // Check if value exists and is not empty or null
-      return value && value.trim() !== "" && !value.includes("null");
-    }),
+    .test(
+      "is-logo-uploaded",
+      "Please upload a logo image",
+      (value) => value && value.trim() !== "" && !value.includes("null")
+    ),
 });
+
+
+
 
 function CompanyForm({ onSubmit, setFiles }) {
   const { control, watch, reset, handleSubmit, formState } = useForm({
@@ -130,7 +182,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   error={!!errors.businessName}
                   helperText={errors?.businessName?.message}
                   variant="outlined"
-                  required
+                  //required
                   fullWidth
                 />
               )}
@@ -151,7 +203,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   error={!!errors.name}
                   helperText={errors?.name?.message}
                   variant="outlined"
-                  required
+                 // required
                   fullWidth
                 />
               )}
@@ -172,7 +224,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   error={!!errors.designation}
                   helperText={errors?.designation?.message}
                   variant="outlined"
-                  required
+                 // required
                   fullWidth
                 />
               )}
@@ -195,7 +247,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   error={!!errors.email}
                   helperText={errors?.email?.message}
                   variant="outlined"
-                  required
+                  //required
                   fullWidth
                 />
               )}
@@ -216,7 +268,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   error={!!errors.country}
                   helperText={errors?.country?.message}
                   variant="outlined"
-                  required
+                  //required
                   fullWidth
                 />
               )}
@@ -282,7 +334,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                     "Enter a valid Google Maps URL"
                   }
                   variant="outlined"
-                  required
+                 // required
                   fullWidth
                 />
               )}
@@ -292,7 +344,7 @@ function CompanyForm({ onSubmit, setFiles }) {
         <div className="flex justify-center lg:flex-nowrap flex-wrap gap-8 mt-8 lg:mt-10">
           <div className="h-full w-full flex flex-col lg:w-1/3 mt-2">
             <InputLabel className="font-bold mb-2">
-              Contact Number 1<span className="text-red">*</span>
+              Contact Number 1<span className="text-red"></span>
             </InputLabel>
 
             <Controller
@@ -306,6 +358,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   onBlur={field.onBlur}
                   value={field.value}
                   international
+                  
                   className={errors.contactNumber1 ? "PhoneInput--error" : ""}
                 />
               )}
@@ -319,7 +372,7 @@ function CompanyForm({ onSubmit, setFiles }) {
           </div>
           <div className="h-full w-full flex flex-col lg:w-1/3 mt-2">
             <InputLabel className="font-bold mb-2">
-              WhatsApp Number 1<span className="text-red">*</span>
+              WhatsApp Number 1<span className="text-red"></span>
             </InputLabel>
 
             <Controller
@@ -414,7 +467,7 @@ function CompanyForm({ onSubmit, setFiles }) {
                   error={!!errors.address}
                   helperText={errors?.address?.message}
                   variant="outlined"
-                  required
+                  //required
                   fullWidth
                   multiline
                   minRows={5}
@@ -426,7 +479,7 @@ function CompanyForm({ onSubmit, setFiles }) {
 
         <div className="h-full w-full lg:w-1/2 mt-8">
           <Typography fontSize={16} mr={8} mb={1} className="text-primary">
-            Logo Image <span className="text-red-500">*</span>
+            Logo Image <span className="text-red-500"></span>
           </Typography>
           <div className="h-full w-full flex justify-center lg:justify-start">
             <Controller

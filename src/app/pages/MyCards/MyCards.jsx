@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -44,7 +44,13 @@ const MyCards = React.memo(() => {
   const handleCreateNew = () => {
     navigate("/create-card");
   };
-
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+  const handlePaginationModelChange = useCallback((newModel) => {
+    setPaginationModel(newModel);
+  }, []);
   const confirmDelete = () => {
     setCards(cards.filter((card) => card._id !== selectedCard._id));
     deleteDigitalCard(selectedCard._id);
@@ -191,23 +197,24 @@ const MyCards = React.memo(() => {
     },
   ];
 
-
-    const handleDownloadQR = () => {
+  const handleDownloadQR = () => {
     if (!selectedCard?.qrCode) return;
 
     const link = document.createElement("a");
     link.href = selectedCard.qrCode;
-    link.download = `${selectedCard?.companyInfo?.businessName || "qr-code"}.png`;
+    link.download = `${
+      selectedCard?.companyInfo?.businessName || "qr-code"
+    }.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-
   const getCustomer = (rawData) => {
     axios
       .get(`api/users/user/${rawData.customerId}`)
       .then((res) => {
+      
         setCustomer(res.data.user);
         setShareDialog(true);
       })
@@ -215,6 +222,8 @@ const MyCards = React.memo(() => {
         console.log(err);
       });
   };
+
+
 
   const getAllCustomers = () => {
     axiosInstance
@@ -284,31 +293,39 @@ const MyCards = React.memo(() => {
       </Box>
 
       {/* Data Grid */}
-      <DataGrid
-        rows={filteredCards}
-        columns={columns}
-        disableColumnMenu
-        disableColumnResize
-        pageSize={5}
-        getRowId={(row) => row._id}
-        sx={{
-          "& .MuiDataGrid-cell": {
-            justifyContent: "center",
-            alignItems: "center",
-            display: "flex",
-            textAlign: "center",
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-            lineHeight: "1.4",
-            padding: "8px",
-          },
-          "& .MuiDataGrid-columnHeader": {
-            justifyContent: "center",
-            textAlign: "center",
-            whiteSpace: "normal",
-          },
-        }}
-      />
+    <DataGrid
+  rows={filteredCards}
+  columns={columns}
+  disableColumnMenu
+  disableColumnResize
+  pagination
+  paginationModel={paginationModel}
+  onPaginationModelChange={handlePaginationModelChange}
+  pageSizeOptions={[5, 10, 25, 50]}
+  getRowId={(row) => row._id}
+  autoHeight
+  disableRowSelectionOnClick
+  sx={{
+    "& .MuiDataGrid-row:hover": {
+      backgroundColor: "transparent !important",
+    },
+    "& .MuiDataGrid-cell:focus": {
+      outline: "none",
+    },
+    "& .MuiDataGrid-cell:focus-within": {
+      outline: "none",
+    },
+    "& .MuiDataGrid-cell:focus-visible": {
+      outline: "none",
+    },
+    "& .MuiDataGrid-cell:active": {
+      backgroundColor: "transparent !important",
+    },
+    "& .MuiDataGrid-columnHeader:focus": {
+      outline: "none",
+    },
+  }}
+/>
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
@@ -428,19 +445,41 @@ const MyCards = React.memo(() => {
             <Box
               sx={{
                 display: "flex",
+               // flexDirection: { xs: "column", sm: "row" }, // Stack buttons vertically on small screens
                 justifyContent: "center",
-                gap: 2,
+                gap: 1,
                 mt: 3,
+                alignItems: "center",
               }}
             >
-              <Button variant="contained" color="primary">
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{
+                  fontSize: { xs: "0.7rem", sm: "0.875rem" }, // Smaller text on mobile
+                  padding: { xs: "4px 8px", sm: "6px 16px" },
+                }}
+              >
                 Download Template
               </Button>
-              <Button variant="contained" color="primary" onClick={handleDownloadQR}>
-  Download QR
-</Button>
 
-              <Button variant="outlined" onClick={() => setQrDialogOpen(false)}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDownloadQR}
+                sx={{
+                  fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                  padding: { xs: "4px 8px", sm: "6px 16px" },
+                }}
+              >
+                Download QR
+              </Button>                                   
+
+              <Button
+                variant="outlined"
+                onClick={() => setQrDialogOpen(false)}
+              
+              >
                 Close
               </Button>
             </Box>

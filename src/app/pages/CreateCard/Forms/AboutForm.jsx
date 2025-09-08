@@ -31,7 +31,7 @@ const schema = yup.object().shape({
   natureOfBusiness: yup.string().required("Nature of Business is required"),
   otherBusiness: yup.string().notRequired(),
   gstinNo: yup.string().notRequired(),
-  aboutCompany: yup.string().notRequired(),
+  aboutCompany: yup.string().required("About company is required"),
   documents: yup.string().notRequired(),
 });
 
@@ -77,7 +77,7 @@ function AboutForm({ onSubmit, setFiles }) {
               render={({ field }) => (
                 <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Establishment Year <span className="text-red-500">*</span>
+                    Establishment Year <span className="text-red-500"></span>
                   </label>
                   <select
                     {...field}
@@ -120,7 +120,7 @@ function AboutForm({ onSubmit, setFiles }) {
                   error={!!errors.natureOfBusiness}
                   helperText={errors?.natureOfBusiness?.message}
                   variant="outlined"
-                  required
+                 // required
                   fullWidth
                 />
               )}
@@ -179,7 +179,7 @@ function AboutForm({ onSubmit, setFiles }) {
                     htmlFor="aboutCompany"
                     className="mb-2 text-sm font-medium text-gray-700"
                   >
-                    About the Company <span className="text-red-500">*</span>
+                    About the Company <span className="text-red-500"></span>
                   </label>
                   <textarea
                     {...field}
